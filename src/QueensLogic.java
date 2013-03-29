@@ -16,7 +16,7 @@ public class QueensLogic {
     private final int nodes = 2000000;
     private final int cache = 200000; 
     public BDDFactory f = JFactory.init(nodes, cache);
-    private BDD rules;
+    private BDD rules = f.one();
     public QueensLogic() {
        //constructor
     }
@@ -32,68 +32,38 @@ public class QueensLogic {
         buildRules(x, y);
     }
 
-   
     private void buildRules(int x, int y) {
     	int numVariables = x * y; 
     	f.setVarNum(numVariables);
     	
     	for(int n = 0; n < numVariables; n++) {
-    		if(rules == null) {
-    			rules = buildRule(n, horizontal(n));
-    		}
-    		else {
-    			rules = rules.and(buildRule(n, horizontal(n)));
-    		}
-    		
-    		rules = rules.and(buildRule(n, vertical(n)));
-    		rules = rules.and(buildRule(n, diagonal(n)));
-    		rules = rules.and(oneQueenPerRow());
-    		
-    		//buildUpwardsSlopingDiagonalRule(n);
-    		//buildDownWardsSlopingDiagonalRule(n);
+    		rules = rules.and(buildRule(n, horizontal(n))).
+    					  and(buildRule(n, vertical(n))).
+    					  and(buildRule(n, diagonal(n))).
+    					  and(oneQueenPerRowRule()); 
     	}
-    	
-    	
-    	
 	}
 
 	public BDD buildRule(int i, ArrayList<Integer> otherVars) {
-		BDD rule = null;
+		BDD rule = f.one();
 		
 		for (int j : otherVars) {
-			if (rule == null) {
-				rule = f.nithVar(j);
-			}
-			else {
-				rule = rule.and(f.nithVar(j));
-			}
+			rule = rule.and(f.nithVar(j));
 		}
-		
-
 		
 		return f.ithVar(i).imp(rule);
 	}
 	
-	
-	public BDD oneQueenPerRow(){
-		BDD rule = null;
+	public BDD oneQueenPerRowRule(){
+		BDD rule = f.one();
 		for (int j = 0; j < y; j++) {
-			BDD innerRule = null;
+			BDD innerRule = f.zero();
+			
 			for (int k = 0; k < x; k++) {
-				if (innerRule == null) {
-					innerRule = f.ithVar(j * x + k);
-				}
-				else {
-					innerRule = innerRule.or(f.ithVar(j * x + k));
-				}
+				innerRule = innerRule.or(f.ithVar(j * x + k));
 			}
 			
-			if (rule == null) {
-				rule = innerRule;
-			}
-			else {
-				rule = rule.and(innerRule);
-			}
+			rule = rule.and(innerRule);
 		}
 		return rule;
 	}
@@ -125,14 +95,15 @@ public class QueensLogic {
 	public ArrayList<Integer> diagonal(int i){
 		ArrayList<Integer> array = new ArrayList<Integer>();
 		
-		int[] operations = {-x-1, -x+1, x-1, x+1};
+		int[][] operations = {{-1, -1}, {-1, 1}, {1, 1}, {1, -1}};
 		
-		for (int delta : operations) {
-			 int n = i + delta;
-			 
-			 while (n >= 0 && n < x * y){
-				array.add(n);
-				n += delta;
+		for (int[] vector : operations) {
+			int row = i / y + vector[0];
+			int col = i % x + vector[1];  
+			while (row >= 0 && row < y && col >= 0 && col < x){
+				array.add(row * x + col);
+				row += vector[0];
+				col += vector[1];
 			 }
 		}
 		
@@ -152,7 +123,18 @@ public class QueensLogic {
         board[column][row] = 1;
         
         // put some logic here..
-      
+        rules = rules.restrict(f.ithVar(row * x + column));
+        
+        for(int r = 0; r < y; r++) {
+	        for(int c = 0; c < x; c++) {
+	        	if(board[c][r] == 1) continue;
+	        	
+	        	if(rules.restrict(f.ithVar(r * x + c)).isZero()) {
+	        		board[c][r] = -1;
+	        	}
+	        }
+        }
+       
         return true;
     }
 }

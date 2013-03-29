@@ -28,6 +28,15 @@ public class QueensLogicTest {
 		shouldBeTrue(f, rule, trues(1), falses());
 	}
 	
+	/*
+	 * BOARD:
+	 * 0  1  2  3  4
+	 * 5  6  7  8  9
+	 * 10 11 12 13 14
+	 * 15 16 17 18 19
+	 * 20 21 22 23 24
+	 */
+	
 	@Test
 	public void testHorizontalRule() {
 		shouldBeUnsatisfiable(trues(0, 3), falses());
@@ -52,7 +61,11 @@ public class QueensLogicTest {
 	@Test
 	public void testOneQueenPerRow(){
 		shouldBeUnsatisfiable(trues(), falses(0,1,2,3,4));
+	}
 	
+	@Test
+	public void testSolution() {
+		shouldBeTautology(trues(0, 7, 14, 16, 23), falses(1,2,3,4,5,6,8,9,10,11,12,13,15,17,18,19,20,21,22,24));
 	}
 	
 	
@@ -90,7 +103,9 @@ public class QueensLogicTest {
 	}
 	
 	private void shouldBeSatisfiable(int[] trues, int[] falses) {
-		shouldNotBeFalse(q.f, q.getRules(), trues, falses);
+		double solutions = restrict(q.f, q.getRules(), trues, falses).satCount();
+		assertTrue(solutions > 0);
+		
 	}
 	
 	private void shouldBeUnsatisfiable(int[] trues, int[] falses) {
@@ -135,6 +150,11 @@ public class QueensLogicTest {
 		
 		assertEquals(1, second.size());
 		assertTrue(second.contains(3));
+	}
+	
+	@Test
+	public void testDiagonal() {
+		assertFalse(q.diagonal(0).contains(4));
 	}
 
 }
