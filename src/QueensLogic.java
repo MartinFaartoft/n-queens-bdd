@@ -2,7 +2,7 @@
  * This class implements the logic behind the BDD for the n-queens problem
  * You should implement all the missing methods
  * 
- * @author Stavros Amanatidis
+ * @author Martin Faartoft, Thorbj¿rn Nielsen
  *
  */
 import java.util.*;
@@ -37,18 +37,16 @@ public class QueensLogic {
     	int numVariables = x * y; 
     	f.setVarNum(numVariables);
     	
-    	
     	for(int n = 0; n < numVariables; n++) {
-    		
-    		ArrayList<Integer> array = getHorizontalArrayFromVar(n);
     		if(rules == null) {
-    			rules = buildRuleFromVars(n, array);
+    			rules = buildRule(n, horizontal(n));
     		}
     		else {
-    			rules.and(buildRuleFromVars(n, array));
+    			rules = rules.and(buildRule(n, horizontal(n)));
     		}
+    		
+    		rules = rules.and(buildRule(n, vertical(n)));
     	
-    		//buildVerticalRule(n);
     		//buildUpwardsSlopingDiagonalRule(n);
     		//buildDownWardsSlopingDiagonalRule(n);
     	}
@@ -57,7 +55,7 @@ public class QueensLogic {
     	
 	}
 
-	public BDD buildRuleFromVars(int i, ArrayList<Integer> otherVars) {
+	public BDD buildRule(int i, ArrayList<Integer> otherVars) {
 		BDD rule = null;
 		
 		for (int j : otherVars) {
@@ -65,7 +63,7 @@ public class QueensLogic {
 				rule = f.nithVar(j);
 			}
 			else {
-				rule.and(f.nithVar(j));
+				rule = rule.and(f.nithVar(j));
 			}
 		}
 		
@@ -73,9 +71,21 @@ public class QueensLogic {
 		
 		return f.ithVar(i).imp(rule);
 	}
+
+	public ArrayList<Integer> vertical(int i) {
+		ArrayList<Integer> result = new ArrayList<Integer>();
+		int col = i % x;
+		for(int j = 0; j < y; j++) {
+			int n = col + j * x;
+			if(n == i) continue;
+			
+			result.add(n);
+		}
+		
+		return result;
+	}
 	
-	
-	public ArrayList<Integer> getHorizontalArrayFromVar(int i){
+	public ArrayList<Integer> horizontal(int i){
 		ArrayList<Integer> array = new ArrayList<Integer>();
 		for(int j = 0; j < x; j++) {
 			int n = j + x * (i / y);
