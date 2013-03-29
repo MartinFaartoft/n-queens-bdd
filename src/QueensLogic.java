@@ -6,7 +6,6 @@
  *
  */
 import java.util.*;
-
 import net.sf.javabdd.*;
 
 public class QueensLogic {
@@ -17,6 +16,9 @@ public class QueensLogic {
     private final int cache = 200000; 
     public BDDFactory f = JFactory.init(nodes, cache);
     private BDD rules = f.one();
+    private BDD restricted = f.one();
+    private HashSet<Integer> queenPositions = new HashSet<Integer>();
+    
     public QueensLogic() {
        //constructor
     }
@@ -37,42 +39,50 @@ public class QueensLogic {
     	f.setVarNum(numVariables);
     	
     	for(int n = 0; n < numVariables; n++) {
-    		rules = rules.and(buildRule(n, horizontal(n))).
-    					  and(buildRule(n, vertical(n))).
-    					  and(buildRule(n, diagonal(n))).
-    					  and(oneQueenPerRowRule()); 
+    		rules.andWith(buildRule(n, getVarsExcludedBy(n)));
     	}
+    	
+    	rules.andWith(oneQueenPerRowRule());
 	}
+    
+    private Iterable<Integer> getVarsExcludedBy(int var) {
+    	ArrayList<Integer> result = horizontal(var);
+    	result.addAll(vertical(var));
+    	result.addAll(diagonal(var));
+    	
+    	return result;
+    }
 
-	public BDD buildRule(int i, ArrayList<Integer> otherVars) {
+	public BDD buildRule(int i, Iterable<Integer> excludedVars) {
 		BDD rule = f.one();
 		
-		for (int j : otherVars) {
-			rule = rule.and(f.nithVar(j));
+		for (int excluded : excludedVars) {
+			rule.andWith(f.nithVar(excluded));
 		}
 		
-		return f.ithVar(i).imp(rule);
+		return f.ithVar(i).imp(rule); //x(i) implies !x(n) and !x(n+1)...
 	}
 	
-	public BDD oneQueenPerRowRule(){
+	public BDD oneQueenPerRowRule() {
 		BDD rule = f.one();
-		for (int j = 0; j < y; j++) {
+		for (int row = 0; row < y; row++) {
 			BDD innerRule = f.zero();
 			
-			for (int k = 0; k < x; k++) {
-				innerRule = innerRule.or(f.ithVar(j * x + k));
+			for (int col = 0; col < x; col++) {
+				innerRule.orWith(f.ithVar(row * x + col));
 			}
 			
-			rule = rule.and(innerRule);
+			rule.andWith(innerRule);
 		}
+		
 		return rule;
 	}
 
 	public ArrayList<Integer> vertical(int i) {
 		ArrayList<Integer> result = new ArrayList<Integer>();
 		int col = i % x;
-		for(int j = 0; j < y; j++) {
-			int n = col + j * x;
+		for(int row = 0; row < y; row++) {
+			int n = col + row * x;
 			if(n == i) continue;
 			
 			result.add(n);
@@ -83,9 +93,9 @@ public class QueensLogic {
 	
 	public ArrayList<Integer> horizontal(int i){
 		ArrayList<Integer> array = new ArrayList<Integer>();
-		for(int j = 0; j < x; j++) {
-			int n = j + x * (i / y);
-			if (n == i) continue; //don't add current var to restriction
+		for(int col = 0; col < x; col++) {
+			int n = col + x * (i / y);
+			if (n == i) continue;
 			array.add(n);
 		}
 		return array;
@@ -95,9 +105,9 @@ public class QueensLogic {
 	public ArrayList<Integer> diagonal(int i){
 		ArrayList<Integer> array = new ArrayList<Integer>();
 		
-		int[][] operations = {{-1, -1}, {-1, 1}, {1, 1}, {1, -1}};
+		int[][] directions = {{-1, -1}, {-1, 1}, {1, 1}, {1, -1}};
 		
-		for (int[] vector : operations) {
+		for (int[] vector : directions) {
 			int row = i / y + vector[0];
 			int col = i % x + vector[1];  
 			while (row >= 0 && row < y && col >= 0 && col < x){
@@ -113,24 +123,57 @@ public class QueensLogic {
 	public int[][] getGameBoard() {
         return board;
     }
+	
+	private BDD getRestrictions() {
+		BDD res = f.one();
+		for (int q :  queenPositions) {
+			res.andWith(f.ithVar(q));
+		}
+		
+		return res;
+	}
+	
+	private void addQueen(int var) {
+		queenPositions.add(var);
+		updateRestrictions();
+	}
+	
+	private void updateRestrictions() {
+		restricted = rules.restrict(getRestrictions());
+	}
+	
+	private void removeQueen(int var) {
+		queenPositions.remove(var);
+		updateRestrictions();
+	}
 
     public boolean insertQueen(int column, int row) {
-
-        if (board[column][row] == -1 || board[column][row] == 1) {
+    	
+        if (board[column][row] == -1) { //clicked red cross, do nothing
             return true;
         }
         
-        board[column][row] = 1;
+        if (board[column][row] == 1) { //if queen is already here, remove it
+            board[column][row] = 0;
+            removeQueen(row * x + column);
+        } else {
+        	board[column][row] = 1; //not a queen, place one
+            addQueen(row * x + column);
+        }
         
-        // put some logic here..
-        rules = rules.restrict(f.ithVar(row * x + column));
+        boolean solved = restricted.pathCount() == 1;
         
         for(int r = 0; r < y; r++) {
 	        for(int c = 0; c < x; c++) {
 	        	if(board[c][r] == 1) continue;
 	        	
-	        	if(rules.restrict(f.ithVar(r * x + c)).isZero()) {
+	        	if(restricted.restrict(f.ithVar(r * x + c)).isZero()) {
 	        		board[c][r] = -1;
+	        	} else if (solved) { 
+	        		board[c][r] = 1;
+	        		addQueen(r * x + c);
+	        	} else {
+	        		board[c][r] = 0; //remove red cross that might be leftover form removed queen
 	        	}
 	        }
         }
