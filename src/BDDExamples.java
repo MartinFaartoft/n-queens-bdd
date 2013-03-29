@@ -7,7 +7,7 @@ public class BDDExamples {
 	 * Gives some examples on how the BDD package is used
 	 */
 	public static void main(String[] args){
-		BDDFactory fact = JFactory.init(10,10);
+		BDDFactory fact = JFactory.init(10,10); 
 		fact.setVarNum(2);
 		
 		BDD True = fact.one();
