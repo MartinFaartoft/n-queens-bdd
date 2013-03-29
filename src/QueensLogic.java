@@ -46,7 +46,9 @@ public class QueensLogic {
     		}
     		
     		rules = rules.and(buildRule(n, vertical(n)));
-    	
+    		rules = rules.and(buildRule(n, diagonal(n)));
+    		rules = rules.and(oneQueenPerRow());
+    		
     		//buildUpwardsSlopingDiagonalRule(n);
     		//buildDownWardsSlopingDiagonalRule(n);
     	}
@@ -71,6 +73,30 @@ public class QueensLogic {
 		
 		return f.ithVar(i).imp(rule);
 	}
+	
+	
+	public BDD oneQueenPerRow(){
+		BDD rule = null;
+		for (int j = 0; j < y; j++) {
+			BDD innerRule = null;
+			for (int k = 0; k < x; k++) {
+				if (innerRule == null) {
+					innerRule = f.ithVar(j * x + k);
+				}
+				else {
+					innerRule = innerRule.or(f.ithVar(j * x + k));
+				}
+			}
+			
+			if (rule == null) {
+				rule = innerRule;
+			}
+			else {
+				rule = rule.and(innerRule);
+			}
+		}
+		return rule;
+	}
 
 	public ArrayList<Integer> vertical(int i) {
 		ArrayList<Integer> result = new ArrayList<Integer>();
@@ -92,6 +118,24 @@ public class QueensLogic {
 			if (n == i) continue; //don't add current var to restriction
 			array.add(n);
 		}
+		return array;
+	}
+	
+	
+	public ArrayList<Integer> diagonal(int i){
+		ArrayList<Integer> array = new ArrayList<Integer>();
+		
+		int[] operations = {-x-1, -x+1, x-1, x+1};
+		
+		for (int delta : operations) {
+			 int n = i + delta;
+			 
+			 while (n >= 0 && n < x * y){
+				array.add(n);
+				n += delta;
+			 }
+		}
+		
 		return array;
 	}
 

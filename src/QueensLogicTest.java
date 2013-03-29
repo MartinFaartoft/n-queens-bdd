@@ -42,6 +42,20 @@ public class QueensLogicTest {
 		shouldBeUnsatisfiable(trues(19, 24), falses());
 	}
 	
+	@Test
+	public void testDiagonalRule() {
+		shouldBeUnsatisfiable(trues(0, 6), falses());
+		shouldBeUnsatisfiable(trues(12, 4), falses());
+		shouldBeUnsatisfiable(trues(12, 0), falses());
+	}
+	
+	@Test
+	public void testOneQueenPerRow(){
+		shouldBeUnsatisfiable(trues(), falses(0,1,2,3,4));
+	
+	}
+	
+	
 	private int[] trues(int... values) {
 		return values;
 	}
