@@ -37,35 +37,52 @@ public class QueensLogic {
     	int numVariables = x * y; 
     	f.setVarNum(numVariables);
     	
+    	
     	for(int n = 0; n < numVariables; n++) {
-    		if(n == 0) {
-    			rules = buildHorizontalRule(n);
+    		
+    		ArrayList<Integer> array = getHorizontalArrayFromVar(n);
+    		if(rules == null) {
+    			rules = buildRuleFromVars(n, array);
     		}
     		else {
-    			rules.and(buildHorizontalRule(n));
+    			rules.and(buildRuleFromVars(n, array));
     		}
+    	
     		//buildVerticalRule(n);
     		//buildUpwardsSlopingDiagonalRule(n);
     		//buildDownWardsSlopingDiagonalRule(n);
     	}
     	
+    	
+    	
 	}
 
-	public BDD buildHorizontalRule(int i) {
+	public BDD buildRuleFromVars(int i, ArrayList<Integer> otherVars) {
 		BDD rule = null;
-		for(int j = 0; j < x; j++) {
-			int n = j + x * (i / y);
-			if (n == i) continue; //don't add current var to restriction
-			
+		
+		for (int j : otherVars) {
 			if (rule == null) {
-				rule = f.nithVar(n);
+				rule = f.nithVar(j);
 			}
 			else {
-				rule.and(f.nithVar(n));
+				rule.and(f.nithVar(j));
 			}
 		}
 		
+
+		
 		return f.ithVar(i).imp(rule);
+	}
+	
+	
+	public ArrayList<Integer> getHorizontalArrayFromVar(int i){
+		ArrayList<Integer> array = new ArrayList<Integer>();
+		for(int j = 0; j < x; j++) {
+			int n = j + x * (i / y);
+			if (n == i) continue; //don't add current var to restriction
+			array.add(n);
+		}
+		return array;
 	}
 
 	public int[][] getGameBoard() {
