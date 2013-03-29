@@ -4,3 +4,10 @@
 *.jar
 *.war
 *.ear
+*.toc
+
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.gz
