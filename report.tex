@@ -1,13 +1,27 @@
 \documentclass{llncs}
 \usepackage{llncsdoc}
 \usepackage[utf8]{inputenc}
+\usepackage{chessboard}
 \begin{document}
 \title{Solving the N-Queens Problem}
 \subtitle{Interactive Configuration using Binary Decision Diagrams}
 \author{Thorbjørn Nielsen (thse@itu.dk) and Martin Faartoft (mlfa@itu.dk)}
 \institute{IT University of Copenhagen}
 \maketitle
-\begin{abstract}
-In the following, we outline our solution to the N-Queens problem.
-\end{abstract}
+\section{Introduction}
+Using the provided library and Java GUI components, we are to create an interactive configurator that helps a user to solve the N-Queens problem. This means doing the following:
+	\begin{itemize}
+		\item Compile a BDD that represents the rules of N-Queens
+		\item Restrict the BDD every time the user adds a queen
+		\item Relax the BDD restrictions every time the user removes a queen
+		\item Complete the solution, if there are no choices left (the remaining queens can only be placed in one way)
+	\end{itemize}
+\section{Representing the Rules of N-Queens}
+We have a BDD representing the rules of the board, with one variable for each square on the board. The top left corner is variable \#0, and then taking rows before columns, the lower right corner is variable \#$n*n-1$, where n is the number of squares per row (and column).
+	\begin{center}
+	\begin{tabular}{cc}
+        \chessboard[setwhite={Qd5}, addblack={Pa8,Pa5,Pa2,Pb7,Pb5,Pb3,Pc6,Pc5,Pc4,Pd8,Pd7,Pd6,Pd4,Pd3,Pd2,Pd1,Pe6,Pe5,Pe4,Pf7,Pf5,Pf3,Pg8,Pg5,Pg2,Ph5,Ph1}, showmover=false]
+   	\end{tabular}
+   	foo
+   	\end{center}
 \end{document}
