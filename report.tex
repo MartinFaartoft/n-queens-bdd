@@ -1,7 +1,16 @@
+%Send to maxime.beauquier@itu.dk
+
 \documentclass{llncs}
 \usepackage{llncsdoc}
 \usepackage[utf8]{inputenc}
 \usepackage{chessboard}
+\usepackage[LSB,LSB1,LSB2,LSB3,LSBC1,LSBC2,LSBC3,T1]{fontenc}
+
+\storechessboardstyle{fun}{%
+	whitepiececolor=red,
+	setfontcolors
+}
+
 \begin{document}
 \title{Solving the N-Queens Problem}
 \subtitle{Interactive Configuration using Binary Decision Diagrams}
@@ -20,8 +29,8 @@ Using the provided library and Java GUI components, we are to create an interact
 We have a BDD representing the rules of the board, with one variable for each square on the board. The top left corner is variable \#0, and then taking rows before columns, the lower right corner is variable \#$n*n-1$, where n is the number of squares per row (and column).
 	\begin{center}
 	\begin{tabular}{cc}
-        \chessboard[setwhite={Qd5}, addblack={Pa8,Pa5,Pa2,Pb7,Pb5,Pb3,Pc6,Pc5,Pc4,Pd8,Pd7,Pd6,Pd4,Pd3,Pd2,Pd1,Pe6,Pe5,Pe4,Pf7,Pf5,Pf3,Pg8,Pg5,Pg2,Ph5,Ph1}, showmover=false]
-   	\end{tabular}
+        \chessboard[boardfontencoding=LSBC1, addwhite={Qd5}, showmover=false, pgfstyle=cross, color=red,
+markfields={a8,a5,a2,b7,b5,b3,c6,c5,c4,d8,d7,d6,d4,d3,d2,d1,e6,e5,e4,f7,f5,f3,g8,g5,g2,h5,h1}]   	\end{tabular}
    	foo
    	\end{center}
 \end{document}
