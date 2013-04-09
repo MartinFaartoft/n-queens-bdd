@@ -31,6 +31,15 @@ We have a BDD representing the rules of the board, with one variable for each sq
 	\begin{tabular}{cc}
         \chessboard[boardfontencoding=LSBC1, addwhite={Qd5}, showmover=false, pgfstyle=cross, color=red,
 markfields={a8,a5,a2,b7,b5,b3,c6,c5,c4,d8,d7,d6,d4,d3,d2,d1,e6,e5,e4,f7,f5,f3,g8,g5,g2,h5,h1}]   	\end{tabular}
-   	foo
    	\end{center}
+   	\begin{center}
+   	Fig. 1: Example of queen placement, and restricted spaces
+   	\end{center}
+\paragraph{}
+Our rules are split in 2, the first part is done for every space on the board and is of the form: $X_i \Rightarrow \neg X_n \land \neg X_{n-1} ... \land \neg X_1 $, where $X_i$ is the variable we're currently adding rules for, and $X_1...X_n$ are the variables that are mutually exclusive with $X_i$ (same row, same column, or same diagonal)
+\paragraph{}
+The second part of the rules is the "one queen per row" part, with rules of the form:
+$X_1 \lor X_2 \lor X_3 ... \lor X_n$. Finally we take the conjunction of the n space-restriction rules, and the $\sqrt{n}$ one-queen-per-row rules, and that is our BDD representing the rules of the N-Queens problem.
+\section{Restricting the BDD}
+Every time a queen is placed, we need to restrict that variable to true. This is done with the 'restrict' function in the JavaBDD library. After restricting the BDD, we go through every space on the board, try to place a queen there - and check if the BDD is the trivial FALSE terminal, meaning that the problem is not solvable with a queen in that space. If that is the case, we instead draw a red cross on that space - 
 \end{document}
