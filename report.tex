@@ -39,7 +39,13 @@ markfields={a8,a5,a2,b7,b5,b3,c6,c5,c4,d8,d7,d6,d4,d3,d2,d1,e6,e5,e4,f7,f5,f3,g8
 Our rules are split in 2, the first part is done for every space on the board and is of the form: $X_i \Rightarrow \neg X_n \land \neg X_{n-1} ... \land \neg X_1 $, where $X_i$ is the variable we're currently adding rules for, and $X_1...X_n$ are the variables that are mutually exclusive with $X_i$ (same row, same column, or same diagonal)
 \paragraph{}
 The second part of the rules is the "one queen per row" part, with rules of the form:
-$X_1 \lor X_2 \lor X_3 ... \lor X_n$. Finally we take the conjunction of the n space-restriction rules, and the $\sqrt{n}$ one-queen-per-row rules, and that is our BDD representing the rules of the N-Queens problem.
+$X_1 \lor X_2 \lor X_3 ... \lor X_n$ (one for each row). Finally we take the conjunction of the n space-restriction rules, and the $\sqrt{n}$ one-queen-per-row rules, and that is our BDD representing the rules of the N-Queens problem.
 \section{Restricting the BDD}
-Every time a queen is placed, we need to restrict that variable to true. This is done with the 'restrict' function in the JavaBDD library. After restricting the BDD, we go through every space on the board, try to place a queen there - and check if the BDD is the trivial FALSE terminal, meaning that the problem is not solvable with a queen in that space. If that is the case, we instead draw a red cross on that space - 
+Every time a queen is placed, we need to restrict that variable to true. This is done with the 'restrict' function in the JavaBDD library. After restricting the BDD, we go through every space on the board, try to place a queen there - and check if the BDD is the trivial FALSE terminal, meaning that the problem is not solvable with a queen in that space. If that is the case, we instead draw a red cross on that space.
+\paragraph{}
+It is, however important to keep the old un-restricted BDD separate, to support undoing a queen placement.
+\section{Removing Queens}
+To support removing a placed queen, we keep two BDD's in memory - the unrestricted BDD, representing the rules of N-Queens, and the restricted BDD, representing the partial assignment of queens. Every time a queen is placed, we restrict the BDD and place the queen position in a set in memory. When a queen is removed, we remove that position from the set, and rebuild the restricted BDD, based on the rule-BDD and the positions of the remaining queens in the set.
+\section{Completing Choiceless Solutions}
+If there is only one solution left for a given partial assignment, we automatically add the remaining queens. This is detected by calling the 'pathCount()' method on the restricted BDD for the partial assignment. If this returns 1, we simply iterate over the empty fields, and add queens to those.
 \end{document}
